@@ -20,7 +20,7 @@ wc newfile -m
 Задание 2:
 Записать из файла with_cake.txt все строчки, в которых есть слово cake.
 
-grep -i cake > with_cake.txt
+grep -i cake cake_rhymes.txt> with_cake.txt
 
 
 Задание 3:
