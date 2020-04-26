@@ -9,7 +9,7 @@ sum=$[$sum+$1]
 shift
 done
 if [[ $count -ne 0 ]]; then
-av=$( echo "scale=4; $sum/$count" | bc )
+av=$[$sum/$count]
 echo "Среднее значение равно $av"
 else
 echo "Среднего значения нет!"
