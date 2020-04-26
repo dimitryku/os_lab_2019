@@ -7,8 +7,10 @@
 ***Получится две программы, первая будет использовать статическую билиотеку, а вторая динамическую.*** 
 
 gcc -c main.c -o  main.o
-gcc -c ./revert_string.c -o ./static/revert_string.o
-gcc -c -fPIC revert_string.c -o ./shared/revert_string.o
+mkdir static
+gcc -c ./revert_string.c -o ./static/revert_string.o -std=c99
+mkdir shared
+gcc -c -fPIC revert_string.c -o ./shared/revert_string.o -std=c99
 ar rcs ./static/lib1.a ./static/revert_string.o
 gcc main.o -Lstatic -l1 -o static_reverter
 gcc -shared shared/revert_string.o -o shared/libreverter.so
@@ -16,8 +18,13 @@ gcc main.o -Lshared -lreverter -o shared_reverter
 
 копируем в usr/lib
 sudo mv shared/libreverter.so /usr/lib
+**Для облака**
+LD_LIBRARY_PATH=/projects/os_lab_2019/lab2/src/revert_string/shared/:${LD_LIBRARY_PATH}
+
 ./shared_reverter qwerty
 
+
+**на облаке не работает**
 №4
 Если вы зайдете в update.sh, то увидите, слежующую строчку 
 `sudo apt -y install libcunit1 libcunit1-doc libcunit1-dev`. 
