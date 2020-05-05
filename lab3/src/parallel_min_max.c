@@ -116,9 +116,13 @@ int main(int argc, char **argv) {
         if (with_files) {
           // use files here
             FILE *fp;
-            if((fp = fopen("numbers","w+")) == NULL)
+            if((fp = fopen("numbers","a+")) != NULL)
             {
                 fprintf(fp, "%d, %d\n", minmax.min, minmax.max);
+            }
+            else{
+                printf("Can't open file");
+                return 1;
             }
             fclose(fp);
 
@@ -150,6 +154,20 @@ int main(int argc, char **argv) {
 
     if (with_files) {
       // read from files
+        FILE *fp;
+        int a = -1;
+        if((fp = fopen("numbers","r")) == NULL)
+        {
+            for(i = 0; i < pnum; i++)
+            {
+            fscanf(fp,"%d", &a);
+            if (a < min) min = a;
+            fscanf(fp, ", %d\n", &a);
+            if (a > max) max = a;
+            }
+            fclose(fp);
+        }
+
     } else {
       // read from pipes
     }
