@@ -42,16 +42,28 @@ int main(int argc, char **argv) {
             seed = atoi(optarg);
             // your code here
             // error handling
+            if (seed <= 0) {
+                printf("seed is a positive number\n");
+                return 1;
+            }
             break;
           case 1:
             array_size = atoi(optarg);
             // your code here
             // error handling
+            if (array_size <= 0) {
+                printf("array_size is a positive number\n");
+                return 1;
+            }
             break;
           case 2:
             pnum = atoi(optarg);
             // your code here
             // error handling
+            if (pnum <= 0) {
+                printf("pnum is a positive number\n");
+                return 1;
+            }
             break;
           case 3:
             with_files = true;
@@ -98,11 +110,18 @@ int main(int argc, char **argv) {
       active_child_processes += 1;
       if (child_pid == 0) {
         // child process
-
         // parallel somehow
+        struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
 
         if (with_files) {
           // use files here
+            FILE *fp;
+            if((fp = fopen("numbers","w+")) == NULL)
+            {
+                fprintf(fp, "%d, %d\n", minmax.min, minmax.max);
+            }
+            fclose(fp);
+
         } else {
           // use pipe here
         }
