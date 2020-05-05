@@ -103,6 +103,17 @@ int main(int argc, char **argv) {
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
 
+  //adding pipe if need
+  int pipefd[2];
+  if(!with_files)
+  {
+      pipe(pipefd);
+  }
+  else
+  {
+      fopen("numbers.txt","w");
+  }
+
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
     if (child_pid >= 0) {
@@ -116,9 +127,9 @@ int main(int argc, char **argv) {
         if (with_files) {
           // use files here
             FILE *fp;
-            if((fp = fopen("numbers","a+")) != NULL)
+            if((fp = fopen("numbers.txt","a+")) != NULL)
             {
-                fprintf(fp, "%d, %d\n", minmax.min, minmax.max);
+                fprintf(fp, "%d\n%d\n", minmax.min, minmax.max);
             }
             else{
                 printf("Can't open file");
@@ -127,7 +138,12 @@ int main(int argc, char **argv) {
             fclose(fp);
 
         } else {
+
           // use pipe here
+            close(pipefd[0]);
+            write(pipefd[1], &minmax.min, 16);
+            write(pipefd[1], &minmax.max, 16);
+            close(pipefd[1]);
         }
         return 0;
       }
@@ -140,6 +156,8 @@ int main(int argc, char **argv) {
 
   while (active_child_processes > 0) {
     // your code here
+    int st;
+    wait(&st);
 
     active_child_processes -= 1;
   }
@@ -158,11 +176,11 @@ int main(int argc, char **argv) {
         int a = -1;
         if((fp = fopen("numbers","r")) == NULL)
         {
-            for(i = 0; i < pnum; i++)
+            for(int k = 0; k < pnum; k++)
             {
-            fscanf(fp,"%d", &a);
-            if (a < min) min = a;
-            fscanf(fp, ", %d\n", &a);
+            fscanf(fp, "%d\n", &a);
+            if (a < min_max.min) min_max.min = a;
+            fscanf(fp, "%d\n", &a);
             if (a > max) max = a;
             }
             fclose(fp);
@@ -170,6 +188,12 @@ int main(int argc, char **argv) {
 
     } else {
       // read from pipes
+        int a;
+        while (read(pipefd[0], &a, 16) > 0)
+        {
+            if (a < min) min = a;
+            if (a > max) max = a;
+        }
     }
 
     if (min < min_max.min) min_max.min = min;
