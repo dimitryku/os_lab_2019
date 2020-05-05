@@ -3,6 +3,15 @@
 Разобраться, что делает программа в sequiential_min_max.c, скомпилировать, проверить, что написанный вами GetMinMax работает правильно.
 **добавил код в find_min_max.c**
 
-gcc sequential_min_max.c find_min_max.c utils.c -o mm -std=c99
-bash-4.2 /projects/os_lab_2019/lab3/src $ chmod 777 mm
+gcc sequential_min_max.c utils.c find_min_max.c -o sequental -std=c99
+./sequental 133 12
+min: 12153372
+max: 1825189355
+
+## Задание 2 - 3
+
+### Необходимые знания
+
+Завершить программу parallel\_min\_max.c, так, чтобы задача нахождения минимума и максимума в массиве решалась параллельно.
+Если выставлен аргумент `by_files` для синхронизации процессов использовать файлы (задание 2), в противном случае использовать pipe (задание 3).
 
