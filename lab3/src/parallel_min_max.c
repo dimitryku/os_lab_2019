@@ -64,6 +64,11 @@ int main(int argc, char **argv) {
                 printf("pnum is a positive number\n");
                 return 1;
             }
+            if(pnum > array_size){
+                printf("pnum must be less than array_size\n");
+                pnum = array_size;
+                printf("pnum is equal to array_size now (%d)\n", array_size);
+            }
             break;
           case 3:
             with_files = true;
@@ -131,8 +136,8 @@ int main(int argc, char **argv) {
             {
                 fprintf(fp, "%d\n%d\n", minmax.min, minmax.max);
             }
-            else{
-                printf("Can't open file");
+            else {
+                printf("Can't open file\n");
                 return 1;
             }
             fclose(fp);
@@ -156,7 +161,7 @@ int main(int argc, char **argv) {
 
   while (active_child_processes > 0) {
     // your code here
-    int st;
+    int st = 0;
     wait(&st);
 
     active_child_processes -= 1;
@@ -174,7 +179,7 @@ int main(int argc, char **argv) {
       // read from files
         FILE *fp;
         int a = -1;
-        if((fp = fopen("numbers","r")) == NULL)
+        if((fp = fopen("numbers.txt","r")) != NULL)
         {
             for(int k = 0; k < pnum; k++)
             {
@@ -185,15 +190,22 @@ int main(int argc, char **argv) {
             }
             fclose(fp);
         }
+        else
+        {
+            printf("Can't open file\n");
+            return 1;
+        }
 
     } else {
       // read from pipes
         int a;
+        close(pipefd[1]);
         while (read(pipefd[0], &a, 16) > 0)
         {
             if (a < min) min = a;
             if (a > max) max = a;
         }
+        close(pipefd[0]);
     }
 
     if (min < min_max.min) min_max.min = min;
