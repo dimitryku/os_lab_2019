@@ -19,3 +19,8 @@ gcc parallel_min_max.c find_min_max.c utils.c -o parallel -std=c99
 ./parallel --seed 34 --array_size 13 --pnum 5
 ./parallel --seed 34 --array_size 13 --pnum 5 --by_files
 
+## Задание 4
+**код добавлен в makefile**
+
+## Задание 5
+**создан файл parallel_sequential.c, добавлен в сборку makefile all + makefile parallel_sequential + makefile clean**
