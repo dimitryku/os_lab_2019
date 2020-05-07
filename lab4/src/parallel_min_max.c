@@ -16,13 +16,16 @@
 #include "find_min_max.h"
 #include "utils.h"
 
+
+
 int main(int argc, char **argv) {
   int seed = -1;
   int array_size = -1;
   int pnum = -1;
   int tmt = -1;
   bool with_files = false;
-
+  Gpnum = 0;
+  GPipeReadEnd = 0;
   while (true) {
     int current_optind = optind ? optind : 1;
 
@@ -30,7 +33,7 @@ int main(int argc, char **argv) {
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
                                       {"by_files", no_argument, 0, 'f'},
-                                      {"timeout", optional_argument, 0, 0},
+                                      {"timeout", required_argument, 0, 0},
                                       {0, 0, 0, 0}};
 
     int option_index = 0;
@@ -57,7 +60,6 @@ int main(int argc, char **argv) {
             break;
           case 2:
             pnum = atoi(optarg);
-            printf("3\n");
             if (pnum <= 0) {
                 printf("pnum is a positive number\n");
                 return 1;
@@ -72,9 +74,7 @@ int main(int argc, char **argv) {
             with_files = true;
             break;
           case 4:
-            printf("5\n");
             tmt = atoi(optarg);
-            printf("6\n");
             
             if (tmt <= 0)
             {
@@ -109,10 +109,16 @@ int main(int argc, char **argv) {
            argv[0]);
     return 1;
   }
-  printf("aaaaaa\n");
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
   int active_child_processes = 0;
+  int pipeEnds[2];
+  if(tmt != -1) 
+  {
+      pipe(pipeEnds);
+      GPipeReadEnd = pipeEnds[0];
+      Gpnum = pnum;
+  }
 
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
@@ -127,7 +133,6 @@ int main(int argc, char **argv) {
   {
       fopen("numbers.txt","w");
   }
- printf("aaaaaa\n");
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
     if (child_pid >= 0) {
@@ -161,6 +166,8 @@ int main(int argc, char **argv) {
         }
         return 0;
       }
+      //sending child_pid to pipe for killing process
+      write(pipeEnds[1], &child_pid, sizeof(pid_t));
 
     } else {
       printf("Fork failed!\n");
@@ -168,15 +175,26 @@ int main(int argc, char **argv) {
     }
   }
   if(tmt > 0) {
-  signal(SIGALRM, WakeUpAndKillYorChildren);
-  alarm(tmt);
+    signal(SIGALRM, WakeUpAndKillYourChildren);
+    alarm(tmt);
   }
   while (active_child_processes > 0) {
     int st = 0;
     wait(&st);
     active_child_processes -= 1;
   }
-  if(tmt > 0) alarm(0);
+  if(tmt > 0)
+  {
+    alarm(0);
+    close(pipeEnds[1]);
+    close(pipeEnds[0]);
+    if(Gpnum == -1)
+    {
+        printf("Because of killed processes, program is not able to finish by corrct way.\n");
+        printf("closing\n");
+        return 0;
+    }
+  }
 
   struct MinMax min_max;
   min_max.min = INT_MAX;

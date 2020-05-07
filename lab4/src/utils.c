@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <unistd.h>
+
+
 
 void GenerateArray(int *array, unsigned int array_size, unsigned int seed) {
   srand(seed);
@@ -13,10 +16,19 @@ void GenerateArray(int *array, unsigned int array_size, unsigned int seed) {
   }
 }
 
-void WakeUpAndKillYorChildren(int signo)
+void WakeUpAndKillYourChildren(int signo)
 {
-    int a;
-    kill(0, SIGKILL);
-    while(waitpid(0, &a, WNOHANG)> 0);
+    int a = 0;
+    pid_t b;
+    printf("Waiting too long, killing processes\n");
+    
+    for(int i = 0; i < Gpnum; i++)
+    {
+        read(GPipeReadEnd, &b, sizeof(pid_t));
+        kill(b, SIGKILL);
+        waitpid(b, &a, WNOHANG);
+        printf("%d/%d killed\n",i+1,Gpnum);
+    }
+    Gpnum = -1;
     return;
 }

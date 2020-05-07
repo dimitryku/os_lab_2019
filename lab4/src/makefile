@@ -3,6 +3,8 @@ CFLAGS=-I. -std=c99
 
 all: parallel_min_max
 
+again: clean all
+
 parallel_min_max : utils.o find_min_max.o utils.h find_min_max.h
 	$(CC) -o parallel_min_max utils.o find_min_max.o parallel_min_max.c $(CFLAGS)
 

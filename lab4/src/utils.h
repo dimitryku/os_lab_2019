@@ -7,7 +7,12 @@ struct MinMax {
   int max;
 };
 
+//Read end of pipe for child PIDs, made for killing function
+int GPipeReadEnd;
+//Need it to send pnum to killing function
+int Gpnum;
+
 void GenerateArray(int *array, unsigned int array_size, unsigned int seed);
-void WakeUpAndKillYorChildren (int signo);
+void WakeUpAndKillYourChildren (int signo);
 
 #endif
