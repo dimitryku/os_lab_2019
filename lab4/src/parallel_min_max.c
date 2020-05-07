@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
     close(pipeEnds[0]);
     if(Gpnum == -1)
     {
-        printf("Because of killed processes, program is not able to finish by corrct way.\n");
+        printf("Because of killed processes, program is not able to finish by correct way.\n");
         printf("closing\n");
         return 0;
     }
