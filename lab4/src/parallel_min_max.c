@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
         return 0;
       }
       //sending child_pid to pipe for killing process
-      write(pipeEnds[1], &child_pid, sizeof(pid_t));
+      if(tmt > 0) write(pipeEnds[1], &child_pid, sizeof(pid_t));
 
     } else {
       printf("Fork failed!\n");
