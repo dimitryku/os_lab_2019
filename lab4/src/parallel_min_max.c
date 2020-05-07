@@ -136,11 +136,8 @@ int main(int argc, char **argv) {
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
     if (child_pid >= 0) {
-      // successful fork
       active_child_processes += 1;
       if (child_pid == 0) {
-        // child process
-        // parallel somehow
         struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
 
         if (with_files) {
