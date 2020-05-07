@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-I. -std=c99
 
-all: parallel_min_max
+all: parallel_min_max process_memory
 
 again: clean all
 
@@ -17,5 +17,8 @@ find_min_max.o : utils.h find_min_max.h
 zombies:
 	$(CC) -o zombies zomnies.c $(CFLAGS)
 
+process_memory:
+	$(CC) -o process_memory.c $(CFLAGS)
+
 clean :
-	rm utils.o find_min_max.o parallel_min_max
+	rm utils.o find_min_max.o parallel_min_max process_memory
