@@ -8,6 +8,6 @@ struct MinMax {
 };
 
 void GenerateArray(int *array, unsigned int array_size, unsigned int seed);
-void WakeUpAndKillYorChildren ();
+void WakeUpAndKillYorChildren (int signo);
 
 #endif

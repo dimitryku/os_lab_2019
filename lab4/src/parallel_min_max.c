@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   int seed = -1;
   int array_size = -1;
   int pnum = -1;
-  int timeout = -1;
+  int tmt = -1;
   bool with_files = false;
 
   while (true) {
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
                                       {"by_files", no_argument, 0, 'f'},
-                                      {"timeout",optional_argument, 0, 0},
+                                      {"timeout", optional_argument, 0, 0},
                                       {0, 0, 0, 0}};
 
     int option_index = 0;
@@ -43,8 +43,6 @@ int main(int argc, char **argv) {
         switch (option_index) {
           case 0:
             seed = atoi(optarg);
-            // your code here
-            // error handling
             if (seed <= 0) {
                 printf("seed is a positive number\n");
                 return 1;
@@ -52,8 +50,6 @@ int main(int argc, char **argv) {
             break;
           case 1:
             array_size = atoi(optarg);
-            // your code here
-            // error handling
             if (array_size <= 0) {
                 printf("array_size is a positive number\n");
                 return 1;
@@ -61,8 +57,7 @@ int main(int argc, char **argv) {
             break;
           case 2:
             pnum = atoi(optarg);
-            // your code here
-            // error handling
+            printf("3\n");
             if (pnum <= 0) {
                 printf("pnum is a positive number\n");
                 return 1;
@@ -77,8 +72,11 @@ int main(int argc, char **argv) {
             with_files = true;
             break;
           case 4:
-            timeout = atoi(optarg);
-            if (timeout <= 0)
+            printf("5\n");
+            tmt = atoi(optarg);
+            printf("6\n");
+            
+            if (tmt <= 0)
             {
                 printf("timeout time is a positive number\n");
                 return 1;
@@ -111,7 +109,7 @@ int main(int argc, char **argv) {
            argv[0]);
     return 1;
   }
-
+  printf("aaaaaa\n");
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
   int active_child_processes = 0;
@@ -129,13 +127,13 @@ int main(int argc, char **argv) {
   {
       fopen("numbers.txt","w");
   }
-  pid_t *child_pid = malloc(pnum*sizeof(pid_t));
+ printf("aaaaaa\n");
   for (int i = 0; i < pnum; i++) {
-    child_pid[i] = fork();
-    if (child_pid[i] >= 0) {
+    pid_t child_pid = fork();
+    if (child_pid >= 0) {
       // successful fork
       active_child_processes += 1;
-      if (child_pid[i] == 0) {
+      if (child_pid == 0) {
         // child process
         // parallel somehow
         struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
@@ -169,17 +167,16 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
+  if(tmt > 0) {
   signal(SIGALRM, WakeUpAndKillYorChildren);
-  alarm(timeout);
+  alarm(tmt);
+  }
   while (active_child_processes > 0) {
-    // your code here
-
     int st = 0;
     wait(&st);
-
     active_child_processes -= 1;
   }
-  free(child_pid);
+  if(tmt > 0) alarm(0);
 
   struct MinMax min_max;
   min_max.min = INT_MAX;
