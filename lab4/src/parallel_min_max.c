@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -168,9 +169,11 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-
+  signal(SIGALRM, WakeUpAndKillYorChildren);
+  alarm(timeout);
   while (active_child_processes > 0) {
     // your code here
+
     int st = 0;
     wait(&st);
 
