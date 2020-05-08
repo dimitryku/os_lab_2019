@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
   for (uint32_t i = 0; i < threads_num; i++) {
-    if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&args)) {
+    if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&(args[i]))) {
       printf("Error: pthread_create failed!\n");
       return 1;
     }
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
   for (uint32_t i = 0; i < threads_num; i++) {
     int sum = 0;
     pthread_join(threads[i], (void **)&sum);
-    total_sum += sum;
+    total_sum += (int)sum;
   }
   struct timeval finish_time;
   gettimeofday(&finish_time, NULL);
