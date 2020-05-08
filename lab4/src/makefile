@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I. -std=c99
-THFLAG=-pthread
+THFLAGS=-pthread -lsum -L.
 
 all: parallel_min_max process_memory
 
@@ -21,8 +21,14 @@ zombies:
 process_memory:
 	$(CC) -o process_memory.c $(CFLAGS)
 
-sum: utils.o find_min_max.o find_min_max.h utils.h
-	$(CC) -o sum utils.o find_min_max.o parallel_sum.c $(CFLAGS) $(THFLAG)
+sum: libsum utils.o find_min_max.o find_min_max.h utils.h sum_arr.h 
+	$(CC) -o sum utils.o find_min_max.o parallel_sum.c $(CFLAGS) $(THFLAGS)
+
+libsum: sum.o
+	$(CC) -shared sum.o -o libsum.so $(CFLAGS)
+	
+sum.o: sum_arr.c sum_arr.h 
+	$(CC) -c sum_arr.c -o sum.o -fPIC $(CFLAGS)
 
 clean :
-	rm utils.o find_min_max.o parallel_min_max process_memory sum
+	rm utils.o find_min_max.o parallel_min_max process_memory sum sum.o libsum.so

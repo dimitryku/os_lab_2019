@@ -8,26 +8,9 @@
 
 #include <pthread.h>
 
-#include "find_min_max.h"
+#include "sum_arr.h"
+#include "utils.h"
 
-struct SumArgs {
-  int *array;
-  int begin;
-  int end;
-};
-
-int Sum(const struct SumArgs *args) {
-  int sum = 0;
-  // TODO: your code here 
-  for(int i = args->begin; i < args->end; i++)
-    sum += (args->array)[i];
-  return sum;
-}
-
-void *ThreadSum(void *args) {
-  struct SumArgs *sum_args = (struct SumArgs *)args;
-  return (void *)(size_t)Sum(sum_args);
-}
 
 int main(int argc, char **argv) {
   /*
@@ -103,7 +86,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (seed == -1 || array_size == -1 || threads_num == -1) {
+  if (seed == 0 || array_size == 0 || threads_num == 0) {
     printf("Usage: %s --seed \"num\" --array_size \"num\" --threads_num \"num\" \n", argv[0]);
     return 1;
   }
@@ -128,7 +111,7 @@ int main(int argc, char **argv) {
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
   for (uint32_t i = 0; i < threads_num; i++) {
-    if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&(args[i]))) {
+    if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&args)) {
       printf("Error: pthread_create failed!\n");
       return 1;
     }

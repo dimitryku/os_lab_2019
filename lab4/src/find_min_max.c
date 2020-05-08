@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include <limits.h>
 
+
 struct MinMax GetMinMax(int *array, unsigned int begin, unsigned int end) {
   struct MinMax min_max;
   min_max.min = INT_MAX;
