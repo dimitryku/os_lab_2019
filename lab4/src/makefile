@@ -19,7 +19,7 @@ zombies:
 	$(CC) -o zombies zomnies.c $(CFLAGS)
 
 process_memory:
-	$(CC) -o process_memory.c $(CFLAGS)
+	$(CC) -o process_memory process_memory.c $(CFLAGS)
 
 sum: libsum utils.o find_min_max.o find_min_max.h utils.h sum_arr.h 
 	$(CC) -o sum utils.o find_min_max.o parallel_sum.c $(CFLAGS) $(THFLAGS)

@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <sys/time.h>
 #include <sys/types.h>
-
 #include <pthread.h>
 
 #include "sum_arr.h"
@@ -100,14 +99,15 @@ int main(int argc, char **argv) {
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
 
+  int ars = array_size/threads_num;
+  int left = array_size%threads_num;
   struct SumArgs args[threads_num];
   for(uint32_t i = 0; i < threads_num; i++)
   {
       args[i].array = array;
-      args[i].begin = array_size/threads_num*i;
-      printf("%d",array_size/threads_num*i);
-      args[i].end = array_size/threads_num*(i+1);
-      printf("%d",array_size/threads_num*(i+1));
+      args[i].begin = ars*i + (left < i ? left : i);
+      args[i].end = ars*(i+1) + (left < i+1 ? left : i+1);
+      
   }
 
   struct timeval start_time;
