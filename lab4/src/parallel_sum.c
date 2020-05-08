@@ -105,13 +105,15 @@ int main(int argc, char **argv) {
   {
       args[i].array = array;
       args[i].begin = array_size/threads_num*i;
+      printf("%d",array_size/threads_num*i);
       args[i].end = array_size/threads_num*(i+1);
+      printf("%d",array_size/threads_num*(i+1));
   }
 
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
   for (uint32_t i = 0; i < threads_num; i++) {
-    if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&args)) {
+    if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&(args[i]))) {
       printf("Error: pthread_create failed!\n");
       return 1;
     }
