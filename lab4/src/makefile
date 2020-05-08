@@ -16,7 +16,7 @@ find_min_max.o : utils.h find_min_max.h
 	$(CC) -o find_min_max.o -c find_min_max.c $(CFLAGS)
 
 zombies:
-	$(CC) -o zombies zomnies.c $(CFLAGS)
+	$(CC) -o zombies zombies.c $(CFLAGS)
 
 process_memory:
 	$(CC) -o process_memory process_memory.c $(CFLAGS)
