@@ -125,7 +125,8 @@ int main(int argc, char **argv) {
       args[i].end = array_size/threads_num*(i+1);
   }
 
-
+  struct timeval start_time;
+  gettimeofday(&start_time, NULL);
   for (uint32_t i = 0; i < threads_num; i++) {
     if (pthread_create(&threads[i], NULL, ThreadSum, (void *)&args)) {
       printf("Error: pthread_create failed!\n");
@@ -139,8 +140,14 @@ int main(int argc, char **argv) {
     pthread_join(threads[i], (void **)&sum);
     total_sum += sum;
   }
+  struct timeval finish_time;
+  gettimeofday(&finish_time, NULL);
+
+  double elapsed_time = (finish_time.tv_sec - start_time.tv_sec) * 1000.0;
+  elapsed_time += (finish_time.tv_usec - start_time.tv_usec) / 1000.0;
 
   free(array);
   printf("Total: %d\n", total_sum);
+  printf("Elapsed time: %fms\n", elapsed_time);
   return 0;
 }

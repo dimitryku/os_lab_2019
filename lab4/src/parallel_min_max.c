@@ -139,7 +139,11 @@ int main(int argc, char **argv) {
       active_child_processes += 1;
       if (child_pid == 0) {
         struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
-
+        //unable to use wait() becouse of conflicts with alarm()
+        {int a;
+         for(int i = 0; i < 100000; i++)
+         for(int j = 0; j < 2000; j++)
+         a = i;}
         if (with_files) {
           // use files here
             FILE *fp;
