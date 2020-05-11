@@ -134,7 +134,6 @@ int main(int argc, char **argv) {
       fopen("numbers.txt","w");
   }
   int left = array_size%pnum;
-  in
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
     if (child_pid >= 0) {
