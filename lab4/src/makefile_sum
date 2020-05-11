@@ -1,14 +1,14 @@
 CC=gcc
 CFLAGS=-I. -std=c99
 THFLAGS=-pthread -lsum -L.
-UTPATH=../../lab3/src/utils.c
+UTPATH=../../lab3/src/
 
 all: sum
 
 again: clean all
 
-utils2.o : utils.h
-	$(CC) -o utils2.o -c $(UTPATH) $(CFLAGS)
+utils2.o : ../../lab3/src/utils.h
+	$(CC) -o utils2.o -c $(UTPATH)utils.c $(CFLAGS)
 
 sum: libsum utils2.o utils.h sum_arr.h 
 	$(CC) -o sum utils2.o parallel_sum.c $(CFLAGS) $(THFLAGS)

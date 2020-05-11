@@ -133,12 +133,14 @@ int main(int argc, char **argv) {
   {
       fopen("numbers.txt","w");
   }
+  int left = array_size%pnum;
+  in
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
     if (child_pid >= 0) {
       active_child_processes += 1;
       if (child_pid == 0) {
-        struct MinMax minmax = GetMinMax(array, array_size/pnum*i, array_size/pnum*(i+1));
+        struct MinMax minmax = GetMinMax(array, array_size/pnum*i + (left < i ? left : i), array_size/pnum*(i+1)+(left < i+1 ? left : i+1));
         //unable to use wait() becouse of conflicts with alarm()
         {int a;
          for(int i = 0; i < 100000; i++)
