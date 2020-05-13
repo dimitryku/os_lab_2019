@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-I. -std=c99 -pthread
 
-all: mutex no_mutex factorial
+all: mutex no_mutex factorial deadlock
 
 again: clean all
 
@@ -14,5 +14,8 @@ no_mutex: no_mutex.c
 factorial: factorial.c
 	$(CC) -o factorial factorial.c $(CFLAGS)
 
+deadlock: deadlock.c
+	$(CC) -o deadlock deadlock.c $(CFLAGS)
+
 clean :
-	rm mutex no_mutex factorial
+	rm mutex no_mutex factorial deadlock
