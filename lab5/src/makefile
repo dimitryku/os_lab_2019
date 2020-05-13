@@ -3,7 +3,7 @@ CFLAGS=-I. -std=c99 -pthread
 
 all: mutex no_mutex factorial
 
-again: clean factorial
+again: clean all
 
 mutex: mutex.c
 	$(CC) -o mutex mutex.c $(CFLAGS)

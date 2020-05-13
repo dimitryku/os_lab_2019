@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 struct FactArgs {
     int begin;
@@ -19,7 +20,8 @@ void CountPart(void *args) {
     {
         int num = i%modd;
         pthread_mutex_lock(&mutx);
-        factor = factor%modd * num;
+        factor = factor % modd * num;
+        // printf("%d, %d, %d\n", i, num, factor);
         pthread_mutex_unlock(&mutx);
     }
 }
@@ -99,12 +101,14 @@ int main(int argc, char **argv)
     }
   }
 
-  if (optind < argc) {
+  if (optind < argc) 
+  {
     printf("Has at least one no option argument\n");
     return 1;
   }
 
-  if (modd == 0 || pnum == 0) {
+  if (modd == 0 || pnum == 0) 
+  {
     printf("Usage: %s -k \"num\" --mod \"num\" --pnum \"num\" \n", argv[0]);
     return 1;
   }
@@ -114,16 +118,29 @@ int main(int argc, char **argv)
   struct FactArgs args[pnum];
   for(int i = 0; i < pnum; i++)
   {
-      args[i].begin = ars*i + (left < i ? left : i);
-      printf("%d\n", args[i].begin);
-      args[i].end = ars*(i+1) + (left < i+1 ? left : i+1);
-      printf("%d\n", args[i].end);
+      args[i].begin = ars*i + (left < i ? left : i) + 1;
+    //   printf("%d\n", args[i].begin);
+      args[i].end = ars*(i+1) + (left < i+1 ? left : i+1) + 1;
+    //   printf("%d\n", args[i].end);
   }
 
+  pthread_t threads[pnum];
+  for(int i = 0; i < pnum; i++)
+  {
+      if(pthread_create(&threads[i], NULL, (void*)CountPart, (void *)&(args[i])) != 0)
+      {
+          printf("pthread error\n");
+          return 1;
+      }
+  }
 
+  for(int i = 0; i < pnum; i++)
+  {
+      pthread_join(threads[i], NULL);
+  }
 
-
-
+  factor %= modd;
+  printf("Factorial %d by mod %d = %d\n", k, modd, factor);
 
 
     return 0;
