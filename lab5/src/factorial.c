@@ -4,10 +4,11 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-struct FactArgs{
+struct FactArgs {
     int begin;
     int end;
 };
+
 int factor = 1;
 int modd = 0;
 pthread_mutex_t mutx = PTHREAD_MUTEX_INITIALIZER;
@@ -26,48 +27,69 @@ void CountPart(void *args) {
 
 int main(int argc, char **argv)
 {
+    int k = 0;
     int pnum = 0;
-    int k = getopt(argc,argv, "k:");
-    if (k <= 0)
+
+    int opt = getopt(argc,argv, "k:");
+    if (opt != 'k')
     {
-        printf("needs -k and it is positive number");
+        printf("Usage: %s -k \"num\" --mod \"num\" --pnum \"num\" \n", argv[0]);
         return 1;
+    }
+    else
+    {
+        k = atoi(optarg);
+        if (k <= 0)
+        {
+            printf("k is a positive number\n");
+            return 1;
+        }
     }
 
     while (true) {
-    int current_optind = optind ? optind : 1;
+        int current_optind = optind ? optind : 1;
 
-    static struct option options[] = {{"mod", required_argument, 0, 0},
-                                      {"pnum", required_argument, 0, 0},
-                                      {0, 0, 0, 0}};
+        static struct option options[] = {{"mod", required_argument, 0, 0},
+                                        {"pnum", required_argument, 0, 0},
+                                        {0, 0, 0, 0}};
 
-    int option_index = 0;
-    int c = getopt_long(argc, argv, "f", options, &option_index);
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "f", options, &option_index);
 
-    if (c == -1) break;
+        if (c == -1) break;
 
-    switch (c) {
-      case 0:
-        switch (option_index) {
-          case 0:
-            modd = atoi(optarg);
-            if (modd <= 0) {
-                printf("mod is a positive number\n");
-                return 1;
+        switch (c) 
+        {
+        case 0:
+            switch (option_index) 
+            {
+            case 0:
+                modd = atoi(optarg);
+                if (modd <= 0) 
+                {
+                    printf("mod is a positive number\n");
+                    return 1;
+                }
+                break;
+            case 1:
+                pnum = atoi(optarg);
+                if (pnum <= 0) 
+                {
+                    printf("pnum is a positive number\n");
+                    return 1;
+                }
+                if (pnum > k)
+                {
+                    printf("pnum must be less or equal to k\n");
+                    pnum = k;
+                    printf("pnum is equal to k now\n");
+                }
+                break;
+
+            defalut:
+                printf("Index %d is out of options\n", option_index);
             }
             break;
-          case 1:
-            pnum = atoi(optarg);
-            if (pnum <= 0) {
-                printf("pnum is a positive number\n");
-                return 1;
-            }
-            break;
-
-          defalut:
-            printf("Index %d is out of options\n", option_index);
-        }
-        break;
 
       case '?':
         break;
@@ -83,8 +105,7 @@ int main(int argc, char **argv)
   }
 
   if (modd == 0 || pnum == 0) {
-    printf("Usage: %s -k \"num\" --mod \"num\" --pnum \"num\" \n",
-           argv[0]);
+    printf("Usage: %s -k \"num\" --mod \"num\" --pnum \"num\" \n", argv[0]);
     return 1;
   }
 
