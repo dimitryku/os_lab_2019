@@ -15,15 +15,15 @@ int modd = 0;
 pthread_mutex_t mutx = PTHREAD_MUTEX_INITIALIZER;
 
 void CountPart(void *args) {
-  struct FactArgs *arrs = (struct FactArgs *)args;
-  for(int i = arrs->begin; i < arrs->end; i++)
+    struct FactArgs *arrs = (struct FactArgs *)args;
+    int num = 1;
+    for(int i = arrs->begin; i < arrs->end; i++)
     {
-        int num = i%modd;
-        pthread_mutex_lock(&mutx);
-        factor = factor % modd * num;
-        // printf("%d, %d, %d\n", i, num, factor);
-        pthread_mutex_unlock(&mutx);
+        num = num%modd * i%modd;
     }
+    pthread_mutex_lock(&mutx);
+    factor = factor % modd * num % modd;
+    pthread_mutex_unlock(&mutx);
 }
 
 
@@ -119,9 +119,7 @@ int main(int argc, char **argv)
   for(int i = 0; i < pnum; i++)
   {
       args[i].begin = ars*i + (left < i ? left : i) + 1;
-    //   printf("%d\n", args[i].begin);
       args[i].end = ars*(i+1) + (left < i+1 ? left : i+1) + 1;
-    //   printf("%d\n", args[i].end);
   }
 
   pthread_t threads[pnum];
