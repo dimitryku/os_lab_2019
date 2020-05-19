@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
   uint64_t k = -1;
   uint64_t mod = -1;
   char servers[255] = {'\0'}; // TODO: explain why 255 is maximal length of filename
+  FILE *a;
 
   while (true) {
     int current_optind = optind ? optind : 1;
@@ -84,11 +85,10 @@ int main(int argc, char **argv) {
         }
         break;
       case 2:
-        // TODO: your code here 
-        FILE * a = fopen(optarg, "r");
-        if(a == 0)
+        a = fopen(optarg, "r");
+        if(a != 0)
         {
-            printf("this file doesn't exist\n");
+            printf("Failed to open file!\n");
             return 1;
         }
         else fclose(a);
