@@ -48,7 +48,7 @@ bool ConvertStringToUI64(const char *str, uint64_t *val) {
 int main(int argc, char **argv) {
   uint64_t k = -1;
   uint64_t mod = -1;
-  char servers[255] = {'\0'}; // TODO: explain why 255
+  char servers[255] = {'\0'}; // TODO: explain why 255 is maximal length of filename
 
   while (true) {
     int current_optind = optind ? optind : 1;
@@ -69,14 +69,29 @@ int main(int argc, char **argv) {
       switch (option_index) {
       case 0:
         ConvertStringToUI64(optarg, &k);
-        // TODO: your code here
+        if(k <= 0)
+        {
+            printf("k is a positive number!\n");
+            return 1;
+        }
         break;
       case 1:
         ConvertStringToUI64(optarg, &mod);
-        // TODO: your code here
+        if(mod <= 0)
+        {
+            printf("mod is a positive number!\n");
+            return 1;
+        }
         break;
       case 2:
-        // TODO: your code here
+        // TODO: your code here 
+        FILE * a = fopen(optarg, "r");
+        if(a == 0)
+        {
+            printf("this file doesn't exist\n");
+            return 1;
+        }
+        else fclose(a);
         memcpy(servers, optarg, strlen(optarg));
         break;
       default:
