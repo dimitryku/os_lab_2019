@@ -48,7 +48,7 @@ bool ConvertStringToUI64(const char *str, uint64_t *val) {
 int main(int argc, char **argv) {
   uint64_t k = -1;
   uint64_t mod = -1;
-  char servers[255] = {'\0'}; // TODO: explain why 255 is maximal length of filename
+  char servers[255] = {'\0'}; // TODO: explain why 255 (is maximal length of path)
   FILE *a;
 
   while (true) {
@@ -114,7 +114,15 @@ int main(int argc, char **argv) {
   }
 
   // TODO: for one server here, rewrite with servers from file
-  unsigned int servers_num = 1;
+  unsigned int servers_num = 0;
+  a = fopen(servers, "r");
+  char tmp = '\0';
+  while(tmp != EOF)
+  {
+      tmp = fgetc(a);
+      
+  }
+  fclose(a);
   struct Server *to = malloc(sizeof(struct Server) * servers_num);
   // TODO: delete this and parallel work between servers
   to[0].port = 20001;
