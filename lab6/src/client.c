@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  // TODO: for one server here, rewrite with servers from file
   unsigned int servers_num = 0;
   int size = 10;
   struct Server *to = malloc(sizeof(struct Server) * size);
@@ -147,9 +148,10 @@ int main(int argc, char **argv) {
   }
   fclose(a);
   
-  // TODO: delete this and parallel work between servers
-  to[0].port = 20001;
-  memcpy(to[0].ip, "127.0.0.1", sizeof("127.0.0.1"));
+  // TODO: delete this and parallel work between servers *looks like done already*
+//   to[0].port = 20001;
+//   memcpy(to[0].ip, "127.0.0.1", sizeof("127.0.0.1"));
+
 
   // TODO: work continiously, rewrite to make parallel
   for (int i = 0; i < servers_num; i++) {
@@ -174,7 +176,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Connection failed\n");
       exit(1);
     }
-
+    
     // TODO: for one server
     // parallel between servers
     uint64_t begin = 1;
