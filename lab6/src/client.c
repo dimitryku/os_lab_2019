@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <errno.h>
 #include <getopt.h>
@@ -113,17 +114,39 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // TODO: for one server here, rewrite with servers from file
   unsigned int servers_num = 0;
+  int size = 10;
+  struct Server *to = malloc(sizeof(struct Server) * size);
   a = fopen(servers, "r");
-  char tmp = '\0';
-  while(tmp != EOF)
+  char * cadress;
+  char tmp[22] = {'\0'}; // max size of 255.255.255.255:65535 is 21 symbol
+  while(fgets(tmp, 21, a) != NULL)
   {
-      tmp = fgetc(a);
-      
+      if(servers_num > size)
+      {
+          size = size + 10;
+          to = realloc(to, sizeof(struct Server)*size);
+      }
+        char * cport;
+        if((cadress = strtok_r(tmp, ":", &cport)) != NULL)
+        {
+            for(int i = 0; i < sizeof(cadress); i++)
+                to[servers_num].ip[i] = cadress[i];
+        }
+        else
+        {
+             printf("error while splitting port and adress (%d)\n", servers_num);
+            return 1;
+        }
+        if((to[servers_num].port = atoi(cport)) == 0)
+        {
+            printf("error while converting port to int\n");
+            return 1;
+        }
+      servers_num++;
   }
   fclose(a);
-  struct Server *to = malloc(sizeof(struct Server) * servers_num);
+  
   // TODO: delete this and parallel work between servers
   to[0].port = 20001;
   memcpy(to[0].ip, "127.0.0.1", sizeof("127.0.0.1"));
