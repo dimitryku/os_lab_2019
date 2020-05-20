@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // TODO: for one server here, rewrite with servers from file
+  // TODO: for one server here, rewrite with servers from file *looks like
   unsigned int servers_num = 0;
   int size = 10;
   struct Server *to = malloc(sizeof(struct Server) * size);
@@ -133,6 +133,7 @@ int main(int argc, char **argv) {
         {
             for(int i = 0; i < sizeof(cadress); i++)
                 to[servers_num].ip[i] = cadress[i];
+            
         }
         else
         {
@@ -154,6 +155,8 @@ int main(int argc, char **argv) {
 
 
   // TODO: work continiously, rewrite to make parallel
+    int ars = k/servers_num;
+    int left = k%servers_num;
   for (int i = 0; i < servers_num; i++) {
     struct hostent *hostname = gethostbyname(to[i].ip);
     if (hostname == NULL) {
@@ -179,8 +182,10 @@ int main(int argc, char **argv) {
     
     // TODO: for one server
     // parallel between servers
-    uint64_t begin = 1;
-    uint64_t end = k;
+    // uint64_t begin = 1;
+    // uint64_t end = k;
+    uint64_t begin = ars*i + (left < i ? left : i) + 1;
+    uint64_t end = ars*(i+1) + (left < i+1 ? left : i+1) + 1;
 
     char task[sizeof(uint64_t) * 3];
     memcpy(task, &begin, sizeof(uint64_t));
