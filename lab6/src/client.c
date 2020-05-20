@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include "pthread.h"
 #include <errno.h>
 #include <getopt.h>
 #include <netdb.h>
@@ -42,6 +42,28 @@ bool ConvertStringToUI64(const char *str, uint64_t *val) {
   *val = i;
   return true;
 }
+
+uint64_t WaitForResponse(void * args)
+{
+	int sck = *((int*)args);
+	char response[sizeof(uint64_t)];
+    if (recv(sck, response, sizeof(response), 0) < 0) {
+      fprintf(stderr, "Recieve failed\n");
+      exit(1);
+    }
+	close(sck);
+	uint64_t ans = 0;
+	if(ConvertStringToUI64(response, &ans))
+		return ans;
+	else
+	{
+		printf("Fault while reading ans from socket %d", sck);
+		exit(1);
+	}
+}
+
+
+
 
 int main(int argc, char **argv) {
   uint64_t k = -1;
@@ -136,7 +158,12 @@ int main(int argc, char **argv) {
     servers_num++;
   }
   fclose(a);
-
+  if(servers_num > k)
+  {
+	  printf("Number of servers in bigger than k\n");
+	  servers_num = k;
+	  printf("Only %llu servers will be used\n", k);
+  }
   // TODO: delete this and parallel work between servers *looks like done
   // already*
   //   to[0].port = 20001;
@@ -145,6 +172,8 @@ int main(int argc, char **argv) {
   // TODO: work continiously, rewrite to make parallel
   int ars = k / servers_num;
   int left = k % servers_num;
+  int sck[servers_num];
+  pthread_t threads[servers_num];
   for (int i = 0; i < servers_num; i++) {
     struct hostent *hostname = gethostbyname(to[i].ip);
     if (hostname == NULL) {
@@ -157,21 +186,18 @@ int main(int argc, char **argv) {
     server.sin_port = htons(to[i].port);
     server.sin_addr.s_addr = *((unsigned long *)hostname->h_addr);
 
-    int sck = socket(AF_INET, SOCK_STREAM, 0);
+    sck[i] = socket(AF_INET, SOCK_STREAM, 0);
     if (sck < 0) {
       fprintf(stderr, "Socket creation failed!\n");
       exit(1);
     }
 
-    if (connect(sck, (struct sockaddr *)&server, sizeof(server)) < 0) {
+    if (connect(sck[i], (struct sockaddr *)&server, sizeof(server)) < 0) {
       fprintf(stderr, "Connection failed\n");
       exit(1);
     }
 
-    // TODO: for one server
     // parallel between servers
-    // uint64_t begin = 1;
-    // uint64_t end = k;
     uint64_t begin = ars * i + (left < i ? left : i) + 1;
     uint64_t end = ars * (i + 1) + (left < i + 1 ? left : i + 1) + 1;
 
@@ -180,24 +206,29 @@ int main(int argc, char **argv) {
     memcpy(task + sizeof(uint64_t), &end, sizeof(uint64_t));
     memcpy(task + 2 * sizeof(uint64_t), &mod, sizeof(uint64_t));
 
-    if (send(sck, task, sizeof(task), 0) < 0) {
+    if (send(sck[i], task, sizeof(task), 0) < 0) {
       fprintf(stderr, "Send failed\n");
       exit(1);
     }
-
-    char response[sizeof(uint64_t)];
-    if (recv(sck, response, sizeof(response), 0) < 0) {
-      fprintf(stderr, "Recieve failed\n");
-      exit(1);
+	if (pthread_create(&threads[i], NULL, (void*)WaitForResponse,
+                           (void *)&(sck[i]))) {
+          printf("Error: pthread_create failed!\n");
+          return 1;
     }
+
+    // char response[sizeof(uint64_t)];
+    // if (recv(sck, response, sizeof(response), 0) < 0) {
+    //   fprintf(stderr, "Recieve failed\n");
+    //   exit(1);
+    // }
 
     // TODO: from one server
     // unite results
-    uint64_t answer = 0;
-    memcpy(&answer, response, sizeof(uint64_t));
-    printf("answer: %llu\n", answer);
+    // uint64_t answer = 0;
+    // memcpy(&answer, response, sizeof(uint64_t));
+    // printf("answer: %llu\n", answer);
 
-    close(sck);
+    
   }
   free(to);
 
