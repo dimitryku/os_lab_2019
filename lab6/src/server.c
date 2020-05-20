@@ -34,8 +34,8 @@ uint64_t MultModulo(uint64_t a, uint64_t b, uint64_t mod) {
 
 uint64_t Factorial(const struct FactorialArgs *args) {
   uint64_t ans = 1;
-
-  // TODO: your code here
+  for (int i = args->begin; i < args->end; i++)
+      ans = MultModulo(ans, i, args->mod);
 
   return ans;
 }
@@ -67,11 +67,19 @@ int main(int argc, char **argv) {
       switch (option_index) {
       case 0:
         port = atoi(optarg);
-        // TODO: your code here
+        if(port <= 0 || port > 65535)
+        {
+            printf("port is positive number less then 65536\n");
+            return 1;
+        }
         break;
       case 1:
         tnum = atoi(optarg);
-        // TODO: your code here
+        if(tnum <= 0)
+        {
+            printf("tnum is positive numder\n");
+            return 1;
+        }
         break;
       default:
         printf("Index %d is out of options\n", option_index);
@@ -157,10 +165,12 @@ int main(int argc, char **argv) {
       fprintf(stdout, "Receive: %llu %llu %llu\n", begin, end, mod);
 
       struct FactorialArgs args[tnum];
-      for (uint32_t i = 0; i < tnum; i++) {
-        // TODO: parallel somehow
-        args[i].begin = 1;
-        args[i].end = 1;
+      int ars = (begin - end)/tnum;
+      int left = (begin - end)%tnum;
+      for (uint32_t i = 0; i < tnum; i++) 
+      {
+        args[i].begin = begin + ars*i + (left < i ? left : i) + 1;
+        args[i].end = begin + ars*(i+1) + (left < i+1 ? left : i+1) + 1;
         args[i].mod = mod;
 
         if (pthread_create(&threads[i], NULL, ThreadFactorial,
@@ -177,7 +187,7 @@ int main(int argc, char **argv) {
         total = MultModulo(total, result, mod);
       }
 
-      printf("Total: %llu\n", total);
+      printf("Total: %lu\n", total);
 
       char buffer[sizeof(total)];
       memcpy(buffer, &total, sizeof(total));

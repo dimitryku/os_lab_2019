@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <string.h>
 
 #include <errno.h>
 #include <getopt.h>
@@ -38,10 +37,8 @@ bool ConvertStringToUI64(const char *str, uint64_t *val) {
     fprintf(stderr, "Out of uint64_t range: %s\n", str);
     return false;
   }
-
   if (errno != 0)
     return false;
-
   *val = i;
   return true;
 }
@@ -71,28 +68,25 @@ int main(int argc, char **argv) {
       switch (option_index) {
       case 0:
         ConvertStringToUI64(optarg, &k);
-        if(k <= 0)
-        {
-            printf("k is a positive number!\n");
-            return 1;
+        if (k <= 0) {
+          printf("k is a positive number!\n");
+          return 1;
         }
         break;
       case 1:
         ConvertStringToUI64(optarg, &mod);
-        if(mod <= 0)
-        {
-            printf("mod is a positive number!\n");
-            return 1;
+        if (mod <= 0) {
+          printf("mod is a positive number!\n");
+          return 1;
         }
         break;
       case 2:
         a = fopen(optarg, "r");
-        if(a != 0)
-        {
-            printf("Failed to open file!\n");
-            return 1;
-        }
-        else fclose(a);
+        if (a != 0) {
+          printf("Failed to open file!\n");
+          return 1;
+        } else
+          fclose(a);
         memcpy(servers, optarg, strlen(optarg));
         break;
       default:
@@ -119,44 +113,38 @@ int main(int argc, char **argv) {
   int size = 10;
   struct Server *to = malloc(sizeof(struct Server) * size);
   a = fopen(servers, "r");
-  char * cadress;
+  char *cadress;
   char tmp[22] = {'\0'}; // max size of 255.255.255.255:65535 is 21 symbol
-  while(fgets(tmp, 21, a) != NULL)
-  {
-      if(servers_num > size)
-      {
-          size = size + 10;
-          to = realloc(to, sizeof(struct Server)*size);
-      }
-        char * cport;
-        if((cadress = strtok_r(tmp, ":", &cport)) != NULL)
-        {
-            for(int i = 0; i < sizeof(cadress); i++)
-                to[servers_num].ip[i] = cadress[i];
-            
-        }
-        else
-        {
-             printf("error while splitting port and adress (%d)\n", servers_num);
-            return 1;
-        }
-        if((to[servers_num].port = atoi(cport)) == 0)
-        {
-            printf("error while converting port to int\n");
-            return 1;
-        }
-      servers_num++;
+  while (fgets(tmp, 21, a) != NULL) {
+    if (servers_num > size) {
+      size = size + 10;
+      to = realloc(to, sizeof(struct Server) * size);
+    }
+    char *cport;
+    if ((cadress = strtok_r(tmp, ":", &cport)) != NULL) {
+      for (int i = 0; i < sizeof(cadress); i++)
+        to[servers_num].ip[i] = cadress[i];
+
+    } else {
+      printf("error while splitting port and adress (%d)\n", servers_num);
+      return 1;
+    }
+    if ((to[servers_num].port = atoi(cport)) == 0) {
+      printf("error while converting port to int\n");
+      return 1;
+    }
+    servers_num++;
   }
   fclose(a);
-  
-  // TODO: delete this and parallel work between servers *looks like done already*
-//   to[0].port = 20001;
-//   memcpy(to[0].ip, "127.0.0.1", sizeof("127.0.0.1"));
 
+  // TODO: delete this and parallel work between servers *looks like done
+  // already*
+  //   to[0].port = 20001;
+  //   memcpy(to[0].ip, "127.0.0.1", sizeof("127.0.0.1"));
 
   // TODO: work continiously, rewrite to make parallel
-    int ars = k/servers_num;
-    int left = k%servers_num;
+  int ars = k / servers_num;
+  int left = k % servers_num;
   for (int i = 0; i < servers_num; i++) {
     struct hostent *hostname = gethostbyname(to[i].ip);
     if (hostname == NULL) {
@@ -179,13 +167,13 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Connection failed\n");
       exit(1);
     }
-    
+
     // TODO: for one server
     // parallel between servers
     // uint64_t begin = 1;
     // uint64_t end = k;
-    uint64_t begin = ars*i + (left < i ? left : i) + 1;
-    uint64_t end = ars*(i+1) + (left < i+1 ? left : i+1) + 1;
+    uint64_t begin = ars * i + (left < i ? left : i) + 1;
+    uint64_t end = ars * (i + 1) + (left < i + 1 ? left : i + 1) + 1;
 
     char task[sizeof(uint64_t) * 3];
     memcpy(task, &begin, sizeof(uint64_t));
