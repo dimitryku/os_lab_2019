@@ -1,16 +1,16 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include "pthread.h"
 #include <errno.h>
 #include <getopt.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 struct Server {
   char ip[255];
@@ -43,32 +43,28 @@ bool ConvertStringToUI64(const char *str, uint64_t *val) {
   return true;
 }
 
-uint64_t WaitForResponse(void * args)
-{
-	int sck = *((int*)args);
-	char response[sizeof(uint64_t)];
-    if (recv(sck, response, sizeof(response), 0) < 0) {
-      fprintf(stderr, "Recieve failed\n");
-      exit(1);
-    }
-	close(sck);
-	uint64_t ans = 0;
-	if(ConvertStringToUI64(response, &ans))
-		return ans;
-	else
-	{
-		printf("Fault while reading ans from socket %d", sck);
-		exit(1);
-	}
+uint64_t WaitForResponse(void *args) {
+  int sck = *((int *)args);
+  char response[sizeof(uint64_t)];
+  if (recv(sck, response, sizeof(response), 0) < 0) {
+    fprintf(stderr, "Recieve failed\n");
+    exit(1);
+  }
+  close(sck);
+  uint64_t ans = 0;
+  if (ConvertStringToUI64(response, &ans))
+    return ans;
+  else {
+    printf("Fault while reading ans from socket %d", sck);
+    exit(1);
+  }
 }
-
-
-
 
 int main(int argc, char **argv) {
   uint64_t k = -1;
   uint64_t mod = -1;
-  char servers[255] = {'\0'}; // TODO: explain why 255 (is maximal length of path)
+  char servers[255] = {
+      '\0'}; // TODO: explain why 255 (is maximal length of path)
   FILE *a;
 
   while (true) {
@@ -130,7 +126,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // TODO: for one server here, rewrite with servers from file *looks like
+  // TODO: for one server here, rewrite with servers from file *looks like done*
   unsigned int servers_num = 0;
   int size = 10;
   struct Server *to = malloc(sizeof(struct Server) * size);
@@ -158,11 +154,10 @@ int main(int argc, char **argv) {
     servers_num++;
   }
   fclose(a);
-  if(servers_num > k)
-  {
-	  printf("Number of servers in bigger than k\n");
-	  servers_num = k;
-	  printf("Only %llu servers will be used\n", k);
+  if (servers_num > k) {
+    printf("Number of servers in bigger than k\n");
+    servers_num = k;
+    printf("Only %llu servers will be used\n", k);
   }
   // TODO: delete this and parallel work between servers *looks like done
   // already*
@@ -210,10 +205,10 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Send failed\n");
       exit(1);
     }
-	if (pthread_create(&threads[i], NULL, (void*)WaitForResponse,
-                           (void *)&(sck[i]))) {
-          printf("Error: pthread_create failed!\n");
-          return 1;
+    if (pthread_create(&threads[i], NULL, (void *)WaitForResponse,
+                       (void *)&(sck[i]))) {
+      printf("Error: pthread_create failed!\n");
+      return 1;
     }
 
     // char response[sizeof(uint64_t)];
@@ -227,10 +222,16 @@ int main(int argc, char **argv) {
     // uint64_t answer = 0;
     // memcpy(&answer, response, sizeof(uint64_t));
     // printf("answer: %llu\n", answer);
-
-    
   }
-  free(to);
 
+  uint64_t answer = 0;
+  for (int i = 0; i < servers_num; i++) {
+    uint64_t response = 0;
+    pthread_join(threads[i], (void **)&response);
+    answer = MultModulo(response, answer, mod);
+  }
+
+  free(to);
+  printf("Factorial %llu by mod %llu = %llu\n", k, mod, answer);
   return 0;
 }
