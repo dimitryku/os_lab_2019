@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
         break;
       case 2:
         a = fopen(optarg, "r");
-        if (a != 0) {
+        if (a == 0) {
           printf("Failed to open file!\n");
           return 1;
         } else
