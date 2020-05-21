@@ -121,8 +121,8 @@ int main(int argc, char **argv) {
   struct Server *to = malloc(sizeof(struct Server) * size);
   a = fopen(servers, "r");
   char *cadress;
-  char tmp[22] = {'\0'}; // max size of 255.255.255.255:65535 is 21 symbol
-  while (fgets(tmp, 21, a) != NULL) {
+  char tmp[255] = {'\0'}; // max size of 255.255.255.255:65535 is 21 symbol
+  while (fscanf(a, "%s:", tmp) != EOF) {
     if (servers_num > size) {
       size = size + 10;
       to = realloc(to, sizeof(struct Server) * size);
@@ -131,9 +131,12 @@ int main(int argc, char **argv) {
     if ((cadress = strtok(tmp, ":")) != NULL) {
     //   for (int i = 0; i < sizeof(cadress); i++)
     //     to[servers_num].ip[i] = cadress[i];
-        memcpy(to[servers_num].ip, cadress, sizeof(*cadress));
+        memcpy(to[servers_num].ip, tmp, sizeof(*cadress));
+        if(fscanf(a, "%d\n",cport) != 0)
+        {
+            
+        }
         cport = strtok(0, ":");
-
     } else {
       printf("error while splitting port and adress (%d)\n", servers_num);
       return 1;
@@ -142,7 +145,9 @@ int main(int argc, char **argv) {
       printf("error while converting port to int\n");
       return 1;
     }
+        printf("%d \t %s\n",to[servers_num].port, to[servers_num].ip);
     servers_num++;
+
   }
   fclose(a);
   if (servers_num > k) {

@@ -12,5 +12,5 @@ echo 127.0.0.1:$[20001+$I] >> $5
 #echo server started
 I=$[ $I + 1 ]
 done
-#./client --k $3 --mod $4 --servers $5
+./client --k $3 --mod $4 --servers $5
 #echo client started
