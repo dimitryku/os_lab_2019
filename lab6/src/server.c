@@ -151,6 +151,7 @@ int main(int argc, char **argv) {
       memcpy(&mod, from_client + 2 * sizeof(uint64_t), sizeof(uint64_t));
 
       fprintf(stdout, "Receive: %llu %llu %llu\n", begin, end, mod);
+      if (tnum > end - begin) tnum = end - begin;
 
       struct FactorialArgs args[tnum];
       int ars = (begin - end)/tnum;

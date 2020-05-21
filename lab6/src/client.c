@@ -128,9 +128,11 @@ int main(int argc, char **argv) {
       to = realloc(to, sizeof(struct Server) * size);
     }
     char *cport;
-    if ((cadress = strtok_r(tmp, ":", &cport)) != NULL) {
-      for (int i = 0; i < sizeof(cadress); i++)
-        to[servers_num].ip[i] = cadress[i];
+    if ((cadress = strtok(tmp, ":")) != NULL) {
+    //   for (int i = 0; i < sizeof(cadress); i++)
+    //     to[servers_num].ip[i] = cadress[i];
+        memcpy(to[servers_num].ip, cadress, sizeof(*cadress));
+        cport = strtok(0, ":");
 
     } else {
       printf("error while splitting port and adress (%d)\n", servers_num);
@@ -168,7 +170,7 @@ int main(int argc, char **argv) {
     struct sockaddr_in server;
     server.sin_family = AF_INET;
     server.sin_port = htons(to[i].port);
-    server.sin_addr.s_addr = *((unsigned long *)hostname->h_addr);
+    server.sin_addr.s_addr = *((unsigned long *)hostname->h_addr_list[0]);
 
     sck[i] = socket(AF_INET, SOCK_STREAM, 0);
     if (sck < 0) {
