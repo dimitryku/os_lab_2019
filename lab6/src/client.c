@@ -122,33 +122,20 @@ int main(int argc, char **argv) {
   a = fopen(servers, "r");
   char *cadress;
   char tmp[255] = {'\0'}; // max size of 255.255.255.255:65535 is 21 symbol
-  while (fscanf(a, "%s:", tmp) != EOF) {
+  while (!feof(a)) {
     if (servers_num > size) {
       size = size + 10;
       to = realloc(to, sizeof(struct Server) * size);
     }
-    char *cport;
-    if ((cadress = strtok(tmp, ":")) != NULL) {
-    //   for (int i = 0; i < sizeof(cadress); i++)
-    //     to[servers_num].ip[i] = cadress[i];
-        memcpy(to[servers_num].ip, tmp, sizeof(*cadress));
-        if(fscanf(a, "%d\n",cport) != 0)
-        {
-            
-        }
-        cport = strtok(0, ":");
-    } else {
-      printf("error while splitting port and adress (%d)\n", servers_num);
-      return 1;
-    }
-    if ((to[servers_num].port = atoi(cport)) == 0) {
-      printf("error while converting port to int\n");
-      return 1;
-    }
-        printf("%d \t %s\n",to[servers_num].port, to[servers_num].ip);
-    servers_num++;
+    fscanf(a, "%s\n", tmp);
+    char *marker = strtok(tmp, ":");
+    memcpy(to[servers_num].ip, tmp, sizeof(tmp));
+    to[servers_num].port = atoi(strtok(NULL, ":"));
 
+    printf("%s \t %d\n",to[servers_num].ip, to[servers_num].port);
+    servers_num++;
   }
+  if(to[servers_num - 1].port == 0) servers_num--;
   fclose(a);
   if (servers_num > k) {
     printf("Number of servers in bigger than k\n");
