@@ -1,0 +1,5 @@
+
+export LD_LIBRARY_PATH=/projects/os_lab_2019/lab5/src/:${LD_LIBRARY_PATH}
+make
+./start.sh 2 2 20 31 /projects/os_lab_2019/lab6/src/ips.md
+pkill server
