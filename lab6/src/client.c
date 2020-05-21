@@ -1,3 +1,4 @@
+#include "factorial.h"
 #include "pthread.h"
 #include <errno.h>
 #include <getopt.h>
@@ -11,13 +12,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "factorial.h"
 
 struct Server {
   char ip[255];
   int port;
 };
-
 
 bool ConvertStringToUI64(const char *str, uint64_t *val) {
   char *end = NULL;
@@ -41,12 +40,7 @@ uint64_t WaitForResponse(void *args) {
   }
   close(sck);
   uint64_t ans = 0;
-  if (ConvertStringToUI64(response, &ans))
-    return ans;
-  else {
-    printf("Fault while reading ans from socket %d", sck);
-    exit(1);
-  }
+  memcpy(&ans, response, sizeof(uint64_t));
 }
 
 int main(int argc, char **argv) {
@@ -131,11 +125,10 @@ int main(int argc, char **argv) {
     char *marker = strtok(tmp, ":");
     memcpy(to[servers_num].ip, tmp, sizeof(tmp));
     to[servers_num].port = atoi(strtok(NULL, ":"));
-
-    printf("%s \t %d\n",to[servers_num].ip, to[servers_num].port);
     servers_num++;
   }
-  if(to[servers_num - 1].port == 0) servers_num--;
+  if (to[servers_num - 1].port == 0)
+    servers_num--;
   fclose(a);
   if (servers_num > k) {
     printf("Number of servers in bigger than k\n");
@@ -177,7 +170,7 @@ int main(int argc, char **argv) {
 
     // parallel between servers
     uint64_t begin = ars * i + (left < i ? left : i) + 1;
-    uint64_t end = ars * (i + 1) + (left < i + 1 ? left : i + 1) + 1;
+    uint64_t end = ars * (i + 1) + (left < i + 1 ? left : i + 1) + 1; // right
 
     char task[sizeof(uint64_t) * 3];
     memcpy(task, &begin, sizeof(uint64_t));
@@ -207,14 +200,18 @@ int main(int argc, char **argv) {
     // printf("answer: %llu\n", answer);
   }
 
-  uint64_t answer = 0;
+  uint64_t answer = 1;
+  uint64_t response = 0;
   for (int i = 0; i < servers_num; i++) {
-    uint64_t response = 0;
+    char buff[sizeof(uint64_t)];
     pthread_join(threads[i], (void **)&response);
+
+    // memcpy(&response, buff, sizeof(uint64_t));
     answer = MultModulo(response, answer, mod);
   }
 
   free(to);
+
   printf("Factorial %llu by mod %llu = %llu\n", k, mod, answer);
   return 0;
 }

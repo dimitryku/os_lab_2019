@@ -154,12 +154,12 @@ int main(int argc, char **argv) {
       if (tnum > end - begin) tnum = end - begin;
 
       struct FactorialArgs args[tnum];
-      int ars = (begin - end)/tnum;
-      int left = (begin - end)%tnum;
-      for (uint32_t i = 0; i < tnum; i++) 
+      uint64_t ars = (end - begin)/tnum;
+      uint64_t left = (end - begin)%tnum;
+      for (uint64_t i = 0; i < tnum; i++) 
       {
-        args[i].begin = begin + ars*i + (left < i ? left : i) + 1;
-        args[i].end = begin + ars*(i+1) + (left < i+1 ? left : i+1) + 1;
+        args[i].begin = begin + ars*i + (left < i ? left : i);
+        args[i].end = begin + ars*(i+1) + (left < i+1 ? left : i+1);
         args[i].mod = mod;
 
         if (pthread_create(&threads[i], NULL, ThreadFactorial,
