@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
   char *cadress;
   char tmp[255] = {'\0'}; // max size of 255.255.255.255:65535 is 21 symbol
   while (!feof(a)) {
-    if (servers_num > size) {
+    if (servers_num == size) {
       size = size + 10;
       to = realloc(to, sizeof(struct Server) * size);
     }
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
 
     // parallel between servers
     uint64_t begin = ars * i + (left < i ? left : i) + 1;
-    uint64_t end = ars * (i + 1) + (left < i + 1 ? left : i + 1) + 1; // right
+    uint64_t end = ars * (i + 1) + (left < i + 1 ? left : i + 1) + 1;
 
     char task[sizeof(uint64_t) * 3];
     memcpy(task, &begin, sizeof(uint64_t));
@@ -186,18 +186,6 @@ int main(int argc, char **argv) {
       printf("Error: pthread_create failed!\n");
       return 1;
     }
-
-    // char response[sizeof(uint64_t)];
-    // if (recv(sck, response, sizeof(response), 0) < 0) {
-    //   fprintf(stderr, "Recieve failed\n");
-    //   exit(1);
-    // }
-
-    // TODO: from one server
-    // unite results
-    // uint64_t answer = 0;
-    // memcpy(&answer, response, sizeof(uint64_t));
-    // printf("answer: %llu\n", answer);
   }
 
   uint64_t answer = 1;
@@ -205,8 +193,6 @@ int main(int argc, char **argv) {
   for (int i = 0; i < servers_num; i++) {
     char buff[sizeof(uint64_t)];
     pthread_join(threads[i], (void **)&response);
-
-    // memcpy(&response, buff, sizeof(uint64_t));
     answer = MultModulo(response, answer, mod);
   }
 
