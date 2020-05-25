@@ -19,61 +19,53 @@ struct Server {
 };
 
 int main(int argc, char **argv) {
-  uint64_t k = -1;
-  uint64_t mod = -1;
   double elapsed_time;
-  char servers[255] = {
-      '\0'}; // TODO: explain why 255 (is maximal length of path)
-
-  
-  // TODO: for one server here, rewrite with servers from file *looks like done*
   unsigned int servers_num = 1;
-  struct Server *to = malloc(sizeof(struct Server) * 1);
+  struct Server to;
   struct timeval finish_time;
-   to[0].port = 20001;
-   memcpy(to[0].ip, "95.72.133.152", sizeof("95.72.133.152"));
-
-  // TODO: work continiously, rewrite to make parallel
-  int ars = k / servers_num;
-  int left = k % servers_num;
-  int sck[servers_num];
-  pthread_t threads[servers_num];
+   to.port = 20001;
+   memcpy(to.ip, "95.72.135.152", sizeof("95.72.133.152"));
+  int sck;
     struct timeval start_time;
 
-    struct hostent *hostname = gethostbyname(to[0].ip);
+    struct hostent *hostname = gethostbyname(to.ip);
     if (hostname == NULL) {
-      fprintf(stderr, "gethostbyname failed with %s\n", to[0].ip);
+      fprintf(stderr, "gethostbyname failed with %s\n", to.ip);
       exit(1);
     }
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;
-    server.sin_port = htons(to[0].port);
+    server.sin_port = htons(to.port);
     server.sin_addr.s_addr = *((unsigned long *)hostname->h_addr_list[0]);
 
-    sck[0] = socket(AF_INET, SOCK_STREAM, 0);
+    sck = socket(AF_INET, SOCK_STREAM, 0);
     if (sck < 0) {
       fprintf(stderr, "Socket creation failed!\n");
       exit(1);
     }
-
-    if (connect(sck[0], (struct sockaddr *)&server, sizeof(server)) < 0) {
+    printf("hfg\n");
+    if (connect(sck, (struct sockaddr *)&server, sizeof(server)) < 0) {
       fprintf(stderr, "Connection failed\n");
       exit(1);
     }
+    printf("sdsd\n");
+    char task[sizeof(uint64_t)*3];
+    uint64_t a = 12;
+    memcpy(task, &a, sizeof(uint64_t));
+    memcpy(task+sizeof(uint64_t), &a, sizeof(uint64_t));
+    memcpy(task+2*sizeof(uint64_t), &a, sizeof(uint64_t));
 
-    char task[sizeof(int)];
-    int a = 12;
-    memcpy(task, &a, sizeof(int));
-
+    printf("ss\n");
     gettimeofday(&start_time, NULL);
     
-    if (send(sck[0], task, sizeof(task), 0) < 0) {
+    if (send(sck, task, sizeof(task), 0) < 0) {
       fprintf(stderr, "Send failed\n");
       exit(1);
     }
-    char response[sizeof(int)];
-    recv(sck[0], response, sizeof(response), 0);
+    printf("sended\n");
+    char response[sizeof(uint64_t)];
+    recv(sck, response, sizeof(response), 0);
     gettimeofday(&finish_time, NULL);
 
   elapsed_time = (finish_time.tv_sec - start_time.tv_sec) * 1000.0;
