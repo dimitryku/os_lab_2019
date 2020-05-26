@@ -17,6 +17,7 @@
 int main(int argc, char **argv) {
 
   if (argc < 4) {
+    printf("Too few arguments \n");
     printf("usage: %s ip port bufsize\n", argv[0]);
     exit(1);
   }

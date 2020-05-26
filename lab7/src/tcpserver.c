@@ -13,7 +13,7 @@
 int main(int argc, char *argv[]) {
 
   if (argc < 3) {
-    printf("wgong arguments \n");
+    printf("Too few arguments \n");
     printf("usage %s port buffsize\n", argv[0]);
     exit(1);
   }
