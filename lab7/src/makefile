@@ -12,5 +12,8 @@ tcpserver: tcpserver.c
 udpclient: udpclient.c
 	$(CC) -o udpclient udpclient.c $(CFLAGS)
 
-udpclient: udpserver.c
+udpserver: udpserver.c
 	$(CC) -o udpserver udpserver.c $(CFLAGS)
+
+clean:
+	rm tcpserver tcpclient udpclient udpserver
