@@ -96,18 +96,18 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Recieve failed\n");
         exit(1);
       }
-      printf("rd %d\n",response);
-      if (sendto(sockfd, &response, sizeof(response), 0, (SADDR *)&servaddr,
-                 sizeof(servaddr)) == -1) {
+      if (sendto(sockfd, &response, sizeof(response), 0, (SADDR *)&servaddr1,
+                 sizeof(servaddr1)) == -1) {
         perror("sendto problem3");
         exit(1);
       }
-      
+
       if (sendto(sockfd, &ad, sizeof(ad), 0,
-                 (SADDR *)&servaddr, sizeof(servaddr)) == -1) {
+                 (SADDR *)&servaddr1, sizeof(servaddr1)) == -1) {
         perror("sendto problem4");
         exit(1);
       }
+      //printf("rd %d\n",response);
     }
 
   close(sockfd);

@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #define SADDR struct sockaddr
 
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
         perror("socket problem");
         exit(1);
       }
-
+        //fcntl(sockfd, F_SETFL, O_NONBLOCK);
       memset(&servaddr, 0, sizeof(struct sockaddr_in));
       servaddr1.sin_family = AF_INET;
       servaddr1.sin_addr.s_addr = inet_addr("127.0.1.24");
@@ -98,7 +99,7 @@ int main(int argc, char *argv[]) {
 
       while (true) {
         unsigned int len = sizeof(struct sockaddr_in);
-        printf("bb %d\n", msg);
+        //printf("bb %d\n", msg);
         if ((n = recvfrom(sockfd, &msg, sizeof(msg), 0, (SADDR *)&cliaddr,
                           &len)) < 0) {
           perror("recvfrom");
@@ -138,11 +139,6 @@ int main(int argc, char *argv[]) {
           all = 0;
           j--;
         }
-    //   int j = 0;
-    //   if (write(cfd, &j, sizeof(j)) < 0) {
-    //     perror("write problem");
-    //     exit(1);
-    //   }
 
       if (all == 1) {
         int k = 0;
