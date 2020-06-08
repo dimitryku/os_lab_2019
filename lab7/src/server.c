@@ -70,7 +70,8 @@ int main(int argc, char *argv[]) {
         close(pipeEnds[0]);
 
         int sockfd, n;
-        int SERV_PORT = 49151;
+        int SERV_PORT = 49001;
+        send(lfd, (void *)&SERV_PORT, sizeof(SERV_PORT), 0);
         char ipadr[16];
         struct sockaddr_in servaddr1;
         struct sockaddr_in cliaddr;

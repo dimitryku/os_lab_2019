@@ -1,4 +1,4 @@
-./tcpserver 20002 100
+./tcpserver 20002 100 &
 ./tcpclient 127.0.0.1 20002 100
 
 ./udpserver 49152 128

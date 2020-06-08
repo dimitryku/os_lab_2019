@@ -73,17 +73,20 @@ int main(int argc, char *argv[]) {
     perror("socket problem");
     exit(1);
   }
+  char buff[512];
+  memset(&buff, 0, sizeof(buff));
   for (uint64_t i = 1; i < num; i++) {
-    if (sendto(sockfd, (void *)&i, sizeof(i), 0, (SADDR *)&servaddr,
+      memset(&buff, i, sizeof(buff));
+      if (sendto(sockfd, &buff, sizeof(uint64_t), 0, (SADDR *)&servaddr,
                sizeof(servaddr)) == -1) {
-      perror("sendto problem");
+      perror("sendto problem1");
       exit(1);
     }
   }
   uint64_t i = 0;
-  if (sendto(sockfd, (void *)&i, sizeof(i), 0, (SADDR *)&servaddr,
+  if (sendto(sockfd, &i, sizeof(i), 0, (SADDR *)&servaddr,
                sizeof(servaddr)) == -1) {
-      perror("sendto problem");
+      perror("sendto problem2");
       exit(1);
     }
     sleep(1);
@@ -98,13 +101,13 @@ int main(int argc, char *argv[]) {
     if (response != 0) {
       if (sendto(sockfd, (void *)&response, sizeof(response), 0,
                  (SADDR *)&servaddr, sizeof(servaddr)) == -1) {
-        perror("sendto problem");
+        perror("sendto problem3");
         exit(1);
       }
       response = 0;
       if (sendto(sockfd, (void *)&response, sizeof(response), 0,
                  (SADDR *)&servaddr, sizeof(servaddr)) == -1) {
-        perror("sendto problem");
+        perror("sendto problem4");
         exit(1);
       }
     } else {
