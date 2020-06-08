@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -9,7 +10,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #define SADDR struct sockaddr
 
@@ -38,10 +38,8 @@ int main(int argc, char *argv[]) {
 
   memset(&servaddr, 0, kSize);
   servaddr.sin_family = AF_INET;
-  //   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_port = htons(atoi(argv[1]));
-  setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, (void *)true, sizeof(int));
 
   if (bind(lfd, (SADDR *)&servaddr, kSize) < 0) {
     perror("bind");
@@ -52,7 +50,7 @@ int main(int argc, char *argv[]) {
     perror("listen");
     exit(1);
   }
-  while (1) {
+  while (true) {
     unsigned int clilen = kSize;
 
     if ((cfd = accept(lfd, (SADDR *)&cliaddr, &clilen)) < 0) {
@@ -75,19 +73,22 @@ int main(int argc, char *argv[]) {
     if (child_pid == 0) {
       /////////////////////////// UDP code //////////////////
       int sockfd, n;
-
       char ipadr[16];
       struct sockaddr_in servaddr1;
       struct sockaddr_in cliaddr;
+      bool checklist[num + 1];
+      int all = 0;
+      for (int i = 0; i < num; i++)
+        checklist[i] = 0;
 
       if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("socket problem");
         exit(1);
       }
-        //fcntl(sockfd, F_SETFL, O_NONBLOCK);
+      
       memset(&servaddr, 0, sizeof(struct sockaddr_in));
       servaddr1.sin_family = AF_INET;
-      servaddr1.sin_addr.s_addr = inet_addr("127.0.1.24");
+      servaddr1.sin_addr.s_addr = htonl(INADDR_ANY);
       servaddr1.sin_port = htons(SERV_PORT);
 
       if (bind(sockfd, (SADDR *)&servaddr1, sizeof(struct sockaddr_in)) < 0) {
@@ -99,57 +100,49 @@ int main(int argc, char *argv[]) {
 
       while (true) {
         unsigned int len = sizeof(struct sockaddr_in);
-        //printf("bb %d\n", msg);
         if ((n = recvfrom(sockfd, &msg, sizeof(msg), 0, (SADDR *)&cliaddr,
                           &len)) < 0) {
           perror("recvfrom");
           exit(1);
         }
         if (msg != 0) {
+          checklist[msg] = 1;
           printf("REQUEST %u      FROM %s : %d\n", msg,
                  inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ipadr, 16),
                  ntohs(cliaddr.sin_port));
+        } else {
+          checklist[0] = 1;
+          for (int j = 1; j < num+1; j++) {
+            if (checklist[j] != 1) {
+              write(pipeEnds[1], &j, sizeof(int));
+              checklist[0] = 0;
+            }
+          }
+          if (checklist[0] == 1) {
+            int k = -1;
+            write(pipeEnds[1], &k, sizeof(int));
+            break;
+          } else {
+            int k = 0;
+            write(pipeEnds[1], &k, sizeof(int));
+          }
         }
-
-        write(pipeEnds[1], &msg, sizeof(int));
       }
       /////////////////////////////////////////////////
     }
-    int checklist[num];
-    int all = 0;
-    for (int i = 0; i < num; i++)
-      checklist[i] = 0;
-      sleep(1);
 
-    while (all != 1) {
-      all = 1;
-      int i = 0;
-      while (read(pipeEnds[0], &i, sizeof(int)) > 0) {
-        if (i == 0)
-          break;
-        checklist[i - 1] = 1;
-      }
-      for (int j = 0; j < num; j++)
-        if (checklist[j] == 0) {
-          j++;
-          if (write(cfd, &j, sizeof(j)) < 0) {
-            perror("write problem");
-            exit(1);
-          }
-          all = 0;
-          j--;
-        }
-
-      if (all == 1) {
-        int k = 0;
-        write(cfd, (void *)&k, sizeof(int));
-        kill(child_pid, SIGKILL);
-        break;
+    int missing = 0;
+    while (true) {
+      read(pipeEnds[0], &missing, sizeof(int));
+      if (write(cfd, &missing, sizeof(missing)) < 0) {
+        perror("write problem");
+        exit(1);
       }
     }
+    if(missing == -1)
+        kill(child_pid, SIGKILL);
   }
 
-  close(cfd);
+close(cfd);
+return 0;
 }
-
-
