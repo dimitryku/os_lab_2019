@@ -65,13 +65,14 @@ int main(int argc, char *argv[]) {
       exit(1);
     } else {
       child_pid = fork();
-      if (child_pid >= 0) {
+      if (child_pid == 0) {
         /////////////////////////// UDP code ///////////
         close(pipeEnds[0]);
 
         int sockfd, n;
         int SERV_PORT = 49001;
-        send(lfd, (void *)&SERV_PORT, sizeof(SERV_PORT), 0);
+        printf("%d\n",SERV_PORT);
+        write(lfd, &SERV_PORT, sizeof(int));
         char ipadr[16];
         struct sockaddr_in servaddr1;
         struct sockaddr_in cliaddr;
@@ -83,7 +84,6 @@ int main(int argc, char *argv[]) {
 
         memset(&servaddr, 0, sizeof(struct sockaddr_in));
         servaddr1.sin_family = AF_INET;
-        // servaddr1.sin_addr.s_addr = htonl(INADDR_ANY);
         servaddr1.sin_addr.s_addr = inet_addr("127.0.1.24");
         servaddr1.sin_port = htons(SERV_PORT);
 
