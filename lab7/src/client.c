@@ -15,7 +15,7 @@
 int main(int argc, char *argv[]) {
   int fd;
   int nread;
-  uint64_t num = atoi(argv[3]);
+  int num = atoi(argv[3]);
   int size = 0;
   struct sockaddr_in servaddr;
 
@@ -36,35 +36,33 @@ int main(int argc, char *argv[]) {
     perror("bad address");
     exit(1);
   }
-  
+
   servaddr.sin_port = htons(atoi(argv[2]));
 
   if (connect(fd, (SADDR *)&servaddr, SIZE) < 0) {
     perror("connect");
     exit(1);
   }
-
-  if (write(fd, (void *)&num, sizeof(int64_t)) < 0) {
+  if (write(fd, &num, sizeof(int)) < 0) {
     perror("write");
     exit(1);
   }
+  // nice
   int response = 0;
   if (read(fd, &response, sizeof(int)) < 0) {
     fprintf(stderr, "Recieve failed\n");
     exit(1);
   }
-  printf("%d\n",response);
-  sleep(1);
   ////////////////////////////////////////////
   int SERV_PORT = 49001;
-//   printf("%d\n",SERV_PORT);
+  //   printf("%d\n",SERV_PORT);
   int sockfd, n;
   struct sockaddr_in servaddr1;
   struct sockaddr_in cliaddr;
 
   memset(&servaddr1, 0, sizeof(servaddr1));
   servaddr1.sin_family = AF_INET;
-  servaddr1.sin_port = htons(response);
+  servaddr1.sin_port = htons(SERV_PORT);
 
   if (inet_pton(AF_INET, "127.0.1.24", &servaddr1.sin_addr) < 0) {
     perror("inet_pton problem");
@@ -74,49 +72,47 @@ int main(int argc, char *argv[]) {
     perror("socket problem");
     exit(1);
   }
-//   char buff[512];
-//   memset(&buff, 0, sizeof(buff));
-  for (uint64_t i = 1; i < num; i++) {
-    //   memset(&buff, i, sizeof(buff));
-      if (sendto(sockfd, &i, sizeof(i), 0, (struct sockaddr*)&servaddr1, sizeof(servaddr1)) == -1) {
+
+  for (int i = 1; i < num; i++) {
+    if (sendto(sockfd, &i, sizeof(i), 0, (struct sockaddr *)&servaddr1,
+               sizeof(servaddr1)) == -1) {
       perror("sendto problem1");
       exit(1);
     }
-    
   }
-  uint64_t i = 0;
+  int i = 0;
   if (sendto(sockfd, &i, sizeof(i), 0, (SADDR *)&servaddr1,
-               sizeof(servaddr1)) == -1) {
-      perror("sendto problem2");
-      exit(1);
-    }
-    sleep(1);
+             sizeof(servaddr1)) == -1) {
+    perror("sendto problem2");
+    exit(1);
+  }
+  sleep(1);
   ////////////////////////////////////
-  while (true) {
-    response = 0;
-    if (read(fd, &response, sizeof(response)) < 0) {
-      fprintf(stderr, "Recieve failed\n");
-      exit(1);
-    }
+    response = -1;
+    int ad = 0;
 
-    if (response != 0) {
-      if (sendto(sockfd, &response, sizeof(response), 0,
-                 (SADDR *)&servaddr, sizeof(servaddr)) == -1) {
+    while (response != 0) {
+      if (read(fd, &response, sizeof(response)) < 0) {
+        fprintf(stderr, "Recieve failed\n");
+        exit(1);
+      }
+      printf("rd %d\n",response);
+      if (sendto(sockfd, &response, sizeof(response), 0, (SADDR *)&servaddr,
+                 sizeof(servaddr)) == -1) {
         perror("sendto problem3");
         exit(1);
       }
-      response = 0;
-      if (sendto(sockfd, (void *)&response, sizeof(response), 0,
+      
+      if (sendto(sockfd, &ad, sizeof(ad), 0,
                  (SADDR *)&servaddr, sizeof(servaddr)) == -1) {
         perror("sendto problem4");
         exit(1);
       }
-    } else {
-      break;
     }
-  }
 
   close(sockfd);
   close(fd);
   exit(0);
 }
+
+

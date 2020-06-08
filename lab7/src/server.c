@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +9,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdbool.h>
 
 #define SADDR struct sockaddr
 
@@ -37,10 +37,10 @@ int main(int argc, char *argv[]) {
 
   memset(&servaddr, 0, kSize);
   servaddr.sin_family = AF_INET;
-//   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  //   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
   servaddr.sin_port = htons(atoi(argv[1]));
-  setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, (void*)true, sizeof(int));
+  setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, (void *)true, sizeof(int));
 
   if (bind(lfd, (SADDR *)&servaddr, kSize) < 0) {
     perror("bind");
@@ -59,83 +59,94 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
     printf("connection established\n");
-    uint64_t num = 0;
-    if (read(cfd, (void *)&num, sizeof(num)) == -1) {
+    int num = 0;
+    if (read(cfd, &num, sizeof(int)) <= 0) {
       perror("read");
       exit(1);
-    } else {
-      child_pid = fork();
-      if (child_pid == 0) {
-        /////////////////////////// UDP code ///////////
-        close(pipeEnds[0]);
+    }
+    // nice
+    int SERV_PORT = 49001;
+    if (write(cfd, &SERV_PORT, sizeof(int)) < 0) {
+      perror("write");
+      exit(1);
+    }
+    child_pid = fork();
+    if (child_pid == 0) {
+      /////////////////////////// UDP code //////////////////
+      int sockfd, n;
 
-        int sockfd, n;
-        int SERV_PORT = 49001;
-        printf("%d\n",SERV_PORT);
-        write(lfd, &SERV_PORT, sizeof(int));
-        char ipadr[16];
-        struct sockaddr_in servaddr1;
-        struct sockaddr_in cliaddr;
+      char ipadr[16];
+      struct sockaddr_in servaddr1;
+      struct sockaddr_in cliaddr;
 
-        if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-          perror("socket problem");
-          exit(1);
-        }
-
-        memset(&servaddr, 0, sizeof(struct sockaddr_in));
-        servaddr1.sin_family = AF_INET;
-        servaddr1.sin_addr.s_addr = inet_addr("127.0.1.24");
-        servaddr1.sin_port = htons(SERV_PORT);
-
-        if (bind(sockfd, (SADDR *)&servaddr1, sizeof(struct sockaddr_in)) < 0) {
-          perror("bind problem");
-          exit(1);
-        }
-        printf("UDP-SERVER starts...\n");
-        uint64_t msg = 0;
-
-        while (1) {
-          unsigned int len = sizeof(struct sockaddr_in);
-
-          if ((n = recvfrom(sockfd, (void *)&msg, sizeof(msg), 0,
-                            (SADDR *)&cliaddr, &len)) < 0) {
-            perror("recvfrom");
-            exit(1);
-          }
-
-          printf(
-              "REQUEST %ull      FROM %s : %d\n", msg,
-              inet_ntop(AF_INET, (void *)&cliaddr.sin_addr.s_addr, ipadr, 16),
-              ntohs(cliaddr.sin_port));
-
-          write(pipeEnds[1], &msg, sizeof(uint64_t));
-        }
-        /////////////////////////////////////////////////
+      if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        perror("socket problem");
+        exit(1);
       }
+
+      memset(&servaddr, 0, sizeof(struct sockaddr_in));
+      servaddr1.sin_family = AF_INET;
+      servaddr1.sin_addr.s_addr = inet_addr("127.0.1.24");
+      servaddr1.sin_port = htons(SERV_PORT);
+
+      if (bind(sockfd, (SADDR *)&servaddr1, sizeof(struct sockaddr_in)) < 0) {
+        perror("bind problem");
+        exit(1);
+      }
+      printf("UDP-SERVER starts...\n");
+      int msg = 0;
+
+      while (true) {
+        unsigned int len = sizeof(struct sockaddr_in);
+        printf("bb %d\n", msg);
+        if ((n = recvfrom(sockfd, &msg, sizeof(msg), 0, (SADDR *)&cliaddr,
+                          &len)) < 0) {
+          perror("recvfrom");
+          exit(1);
+        }
+        if (msg != 0) {
+          printf("REQUEST %u      FROM %s : %d\n", msg,
+                 inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ipadr, 16),
+                 ntohs(cliaddr.sin_port));
+        }
+
+        write(pipeEnds[1], &msg, sizeof(int));
+      }
+      /////////////////////////////////////////////////
     }
     int checklist[num];
     int all = 0;
-    for (uint64_t i = 0; i < num; i++)
+    for (int i = 0; i < num; i++)
       checklist[i] = 0;
-    close(pipeEnds[1]);
-    while (1) {
+      sleep(1);
+
+    while (all != 1) {
       all = 1;
-      uint64_t i = 0;
-      while (read(pipeEnds[0], &i, sizeof(uint64_t)) > 0) {
+      int i = 0;
+      while (read(pipeEnds[0], &i, sizeof(int)) > 0) {
         if (i == 0)
           break;
         checklist[i - 1] = 1;
       }
-      for (uint64_t j = 0; j < num; j++)
+      for (int j = 0; j < num; j++)
         if (checklist[j] == 0) {
-            j ++;
-          send(lfd, (void *)&j, sizeof(j), 0);
+          j++;
+          if (write(cfd, &j, sizeof(j)) < 0) {
+            perror("write problem");
+            exit(1);
+          }
           all = 0;
           j--;
         }
+    //   int j = 0;
+    //   if (write(cfd, &j, sizeof(j)) < 0) {
+    //     perror("write problem");
+    //     exit(1);
+    //   }
+
       if (all == 1) {
-        uint64_t k = 0;
-        send(lfd, (void *)&k, sizeof(uint64_t), 0);
+        int k = 0;
+        write(cfd, (void *)&k, sizeof(int));
         kill(child_pid, SIGKILL);
         break;
       }
@@ -144,3 +155,5 @@ int main(int argc, char *argv[]) {
 
   close(cfd);
 }
+
+
