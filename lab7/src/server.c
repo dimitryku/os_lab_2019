@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
         perror("socket problem");
         exit(1);
       }
-      
+
       memset(&servaddr, 0, sizeof(struct sockaddr_in));
       servaddr1.sin_family = AF_INET;
       servaddr1.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
                  ntohs(cliaddr.sin_port));
         } else {
           checklist[0] = 1;
-          for (int j = 1; j < num+1; j++) {
+          for (int j = 1; j < num + 1; j++) {
             if (checklist[j] != 1) {
               write(pipeEnds[1], &j, sizeof(int));
               checklist[0] = 0;
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
           if (checklist[0] == 1) {
             int k = -1;
             write(pipeEnds[1], &k, sizeof(int));
-            break;
+            exit(0);
           } else {
             int k = 0;
             write(pipeEnds[1], &k, sizeof(int));
@@ -138,11 +138,13 @@ int main(int argc, char *argv[]) {
         perror("write problem");
         exit(1);
       }
+      if (missing == -1) {
+        close(cfd);
+        break;
+      }
     }
-    if(missing == -1)
-        kill(child_pid, SIGKILL);
   }
 
-close(cfd);
-return 0;
+  close(cfd);
+  return 0;
 }
